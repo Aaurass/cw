@@ -69,4 +69,8 @@ public static class Utils
     {
         return Path.Combine(GetAppDirectoryPath(), "orders.json");
     }
+    public static string GetAppMembersFilePath()
+    {
+        return Path.Combine(GetAppDirectoryPath(), "Members.json");
+    }
 }

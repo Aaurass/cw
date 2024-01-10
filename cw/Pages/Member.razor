@@ -1,0 +1,276 @@
+﻿@page "/Membership"
+@using cw.Data
+
+
+<nav class="navbar navbar-light bg-light justify-content-between">
+    <h1 class="navbar-brand mb-0 h1">Members</h1>
+    <button class="btn btn-primary" type="button" @onclick="OpenAddMemberDialog">
+        <span class="oi oi-plus" /> Add
+    </button>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Member Name</th>
+            <th>Member Phone</th>
+            <th>Action</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in _members)
+        {
+            <tr>
+                <td>@member.ID</td>
+                <td>@member.MemberName</td>
+                <td>@member.MemberPhoneNum</td>
+                <td>
+                    <button class="btn btn-outline-danger" type="button" @onclick="()=>OpenDeleteMemberDialog(member)">
+                        <span class="oi oi-delete" /> Delete
+                    </button>
+                    <button class="btn btn-outline-danger" type="button" @onclick="()=>OpenUpdateMemberDialog(member)">
+                        <span class="oi oi-edit" /> Edit
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (_showAddMemberDialog)
+{
+    <ModalDialog Title="Add Coffee" OnClose="@OnAddMemberDialogClose" OkLabel="Add">
+        <div>
+            <div class="form-floating">
+                <input type="text" class="form-control username" @bind="_memberName" placeholder="Member Name" />
+                <label for="floatingInput">Member Name</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control password" @bind="_memberPhoneNum" placeholder="Member Phone" />
+                <label for="floatingPassword">Member Phone</label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_addMemberErrorMessage))
+            {
+                <AlertMessage Type="danger" Message="@_addMemberErrorMessage" />
+            }
+        </div>
+    </ModalDialog>
+}
+
+@if (_showUpdateMemberDialog)
+{
+    <ModalDialog Title="Update Memnber" OnClose="@OnUpdateMemberDialogClose" OkLabel="Update">
+        <div>
+            <div class="form-floating">
+                <input type="text" class="form-control username" @bind="_memberName" placeholder="Member Name" />
+                <label for="floatingInput">Member Name</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control password" @bind="_memberPhoneNum" placeholder="Member Phone" />
+                <label for="floatingPassword">Member Phone</label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_updateMemberErrorMessage))
+            {
+                <AlertMessage Type="danger" Message="@_updateMemberErrorMessage" />
+            }
+        </div>
+    </ModalDialog>
+}
+@if (_showDeleteMemberDialog)
+{
+    <ModalDialog Title="Delete Member" OnClose="@OnDeleteMemberDialogClose" OkLabel="Confirm">
+        <p>Are you sure you want to delete <strong>@_deleteMember.MemberName</strong> member and it''s data?</p>
+        @if (!string.IsNullOrEmpty(_deleteMemberErrorMessage))
+        {
+            <AlertMessage Type="danger" Message="@_deleteMemberErrorMessage" />
+        }
+    </ModalDialog>
+}
+
+@if (_showPasswordConfirmationDialog)
+{
+    <ModalDialog Title="Confirm Update" OnClose="@OnPasswordConfirmationDialogClose" OkLabel="Confirm">
+        <div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control password" @bind="_passwordConfirmation" placeholder="Enter your password" />
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_passwordConfirmationErrorMessage))
+            {
+                <AlertMessage Type="danger" Message="@_passwordConfirmationErrorMessage" />
+            }
+        </div>
+    </ModalDialog>
+}
+
+@code {
+    [CascadingParameter]
+    private GlobalState _globalState { get; set; }
+
+    private Membership _deleteMember { get; set; }
+    private Membership _updateMember { get; set; }
+
+    public string _memberName { get; set; }
+    private string _memberPhoneNum { get; set; }
+
+    private bool _showAddMemberDialog { get; set; }
+    private bool _showUpdateMemberDialog { get; set; }
+    private bool _showDeleteMemberDialog { get; set; }
+    private bool _showPasswordConfirmationDialog { get; set; }
+    private bool passwordIsValid { get; set; }
+
+    private string _addMemberErrorMessage { get; set; }
+    private string _deleteMemberErrorMessage { get; set; }
+    private string _updateMemberErrorMessage { get; set; }
+    private string _passwordConfirmationErrorMessage { get; set; }
+
+    private string _passwordConfirmation { get; set; }
+
+
+    private List<Membership> _members { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        _members = MemberService.GetAllMembers();
+    }
+
+    private void OpenAddMemberDialog()
+    {
+        _showAddMemberDialog = true;
+        _memberName = "";
+        _memberPhoneNum = "";
+    }
+
+    private void OnAddMemberDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+            _showAddMemberDialog = false;
+        }
+        else
+        {
+            try
+            {
+                _addMemberErrorMessage = "";
+                _members = MemberService.AddMember(_memberName, _memberPhoneNum);
+                _showAddMemberDialog = false;
+            }
+            catch (Exception e)
+            {
+                _addMemberErrorMessage = e.Message;
+            }
+        }
+    }
+
+    private void OpenUpdateMemberDialog(Membership member)
+    {
+        _updateMember = member;
+        _showUpdateMemberDialog = true;
+        _memberName = member.MemberName;
+        _memberPhoneNum = member.MemberPhoneNum;
+    }
+
+    private void OpenPasswordConfirmationDialog()
+    {
+        _showPasswordConfirmationDialog = true;
+    }
+
+    private void OnUpdateMemberDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+            _showUpdateMemberDialog = false;
+            _updateMember = null;
+        }
+        else
+        {
+            // enable arko euto pop up to ask for password
+            OpenPasswordConfirmationDialog();
+            //if password matches tala ko try execute else iscancel wala code copy
+
+        }
+    }
+
+
+
+    private void OpenDeleteMemberDialog(Membership member)
+    {
+        _deleteMember = member;
+        _showDeleteMemberDialog = true;
+    }
+
+    private void OnDeleteMemberDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+
+            _showDeleteMemberDialog = false;
+            _deleteMember = null;
+        }
+        else
+        {
+            OpenPasswordConfirmationDialog();
+
+        }
+    }
+    private void OnPasswordConfirmationDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+            _showPasswordConfirmationDialog = false;
+            _showUpdateMemberDialog = false;
+            _showDeleteMemberDialog = false;
+        }
+        else
+        {
+            if (_globalState.CurrentUser != null)
+                passwordIsValid = Utils.VerifyHash(_passwordConfirmation, _globalState.CurrentUser.PasswordHash);
+
+            if (passwordIsValid && _showUpdateMemberDialog)
+            {
+                try
+                {
+                    _updateMemberErrorMessage = "";
+                    _members = MemberService.UpdateMembers(_updateMember.ID, _memberName, _memberPhoneNum);
+                    _showPasswordConfirmationDialog = false;
+                    _showUpdateMemberDialog = false;
+                    _updateMember = null;
+                    _passwordConfirmation = null;
+                }
+                catch (Exception e)
+                {
+                    _updateMemberErrorMessage = e.Message;
+                    _passwordConfirmation = null;
+                }
+            }
+            else if (passwordIsValid && _showDeleteMemberDialog)
+            {
+                try
+                {
+                    _deleteMemberErrorMessage = "";
+                    _members = MemberService.DeleteMembers(_deleteMember.ID);
+                    _showPasswordConfirmationDialog = false;
+                    _showDeleteMemberDialog = false;
+                    _deleteMember = null;
+                    _passwordConfirmation = null;
+                }
+                catch (Exception e)
+                {
+                    _deleteMemberErrorMessage = e.Message;
+                    _passwordConfirmation = null;
+                }
+            }
+            else
+            {
+                _passwordConfirmationErrorMessage = "Password is invalid!";
+                _passwordConfirmation = null;
+            }
+        }
+    }
+}

@@ -1,31 +1,31 @@
 ﻿using Microsoft.Extensions.Logging;
 using cw.Data;
-using QuestPDF.Infrastructure;
 
-namespace cw;
-
-public static class MauiProgram
+namespace cw
 {
-    public static MauiApp CreateMauiApp()
+    public static class MauiProgram
     {
-        QuestPDF.Settings.License = LicenseType.Community;
-        var builder = MauiApp.CreateBuilder();
-        builder
-            .UseMauiApp<App>()
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            });
+        public static MauiApp CreateMauiApp()
+        {
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .UseMauiApp<App>()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                });
 
-        builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
-        builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
 
-        builder.Services.AddSingleton<OrderService>();
-        return builder.Build();
+            builder.Services.AddSingleton<MemberService>();
+            builder.Services.AddSingleton<OrderService>();
+            return builder.Build();
+        }
     }
 }
-
